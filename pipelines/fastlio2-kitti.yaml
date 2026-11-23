@@ -1,0 +1,78 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters, tuned for the KITTI odometry benchmark
+# (Velodyne HDL-64E, car).
+#
+# KITTI's odometry-benchmark sequences carry no IMU stream at all (unlike KITTI
+# raw/tracking). mola-fast-lio2-cli's --synthetic-imu inserts a
+# constant-gravity, zero-angular-rate CObservationIMU immediately before each
+# real LiDAR scan -- enough to keep the ESIKF's propagation clock ticking and
+# its gravity initialization converge to "level, stationary," while the actual
+# motion estimate comes entirely from LiDAR-only scan-to-map registration. The
+# same technique, with the same constant, is what mola_dlio_wrapper does for
+# KITTI, so the two methods are fed identically. Usage:
+#
+#   KITTI_BASE_DIR=/path/to/kitti \
+#     mola-fast-lio2-dataset2rawlog --input-kitti-seq 00 -o - | \
+#     mola-fast-lio2-cli -c fastlio2-kitti.yaml --synthetic-imu \
+#       --input-rawlog - --output-tum-path kitti00.tum
+#
+# The synthetic IMU carries no real mounting information, so both extrinsics
+# below are identity -- there is no physical "IMU frame" to place relative to
+# the LiDAR. KITTI's ground truth is in the left-camera frame, which the
+# harness handles the same way it does for every other method on this dataset.
+# -----------------------------------------------------------------------------
+
+lidar_sensor_label: "lidar"
+imu_sensor_label: "imu"
+
+imu_pose_in_lidar: "0 0 0 0 0 0"
+baselink2lidar_pose_str: "0 0 0 0 0 0"
+
+# KITTI's HDL-64E scans carry no per-point timestamp field through this reader,
+# so toFastLio2Cloud() always takes the azimuth-based fallback branch, assuming
+# the dataset's documented 10 Hz scan rate and that the observation timestamp
+# marks the scan's END. That last part matters for scoring: it makes the
+# reported pose timestamp equal to the scan's own recorded/GT-aligned
+# timestamp, so -- unlike DLIO on this dataset, which reports at the scan's
+# MEDIAN synthesized timestamp and needs a half-period TIME_OFFSET correction
+# in the harness -- no timestamp correction is needed here. Verify that on the
+# first run rather than assuming it.
+#
+# Note that KITTI's clouds are already provider-deskewed, so the motion
+# compensation Fast-LIO2 applies from these synthesized offsets is a second,
+# unnecessary one. It is left in place because it cannot be switched off
+# without touching the core, and because DLIO on KITTI is in exactly the same
+# position (pointcloud_deskew stays true in dlio-kitti.yaml) -- so the two
+# wrappers stay comparable with each other. Both differ from mola_lidar_odometry
+# on this dataset, whose KITTI numbers are no-deskew numbers.
+fallback_scan_period: 0.1
+
+# IMU noise. The synthetic stream is noiseless and perfectly level, so these
+# only set how fast the filter trusts it; kept at the wrapper's generic
+# defaults rather than tightened, so the LiDAR term keeps dominating the
+# update, which is the whole point of the arrangement.
+gyr_cov: ${FASTLIO_GYR_COV|0.1}
+acc_cov: ${FASTLIO_ACC_COV|0.1}
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+# Map / matching parameters. Automotive, so a larger voxel and a much longer
+# detection range than the handheld campus configuration -- these follow the
+# MulRan pipeline in this wrapper, the other automotive one, rather than the
+# Oxford Spires one.
+filter_size_surf: ${FASTLIO_FILTER_SIZE_SURF|0.5}
+filter_size_map: ${FASTLIO_FILTER_SIZE_MAP|0.5}
+cube_side_length: ${FASTLIO_CUBE_SIDE_LENGTH|1000.0}
+det_range: ${FASTLIO_DET_RANGE|150.0}
+max_iteration: ${FASTLIO_MAX_ITERATION|3}
+extrinsic_est_en: false
+init_time: 0.1
+
+# Minimum range: the HDL-64E is roof-mounted with a clear field of view, and
+# KITTI's published clouds are already cropped of the ego vehicle, so there is
+# no carrier cluster to remove. Matches dlio-kitti.yaml's blind: 0.0.
+blind: ${FASTLIO_BLIND|0.0}
+
+# --- Estimated trajectory output ---
+save_trajectory_to_file: ${MOLA_SAVE_TRAJECTORY|false}
+trajectory_output_file: ${MOLA_TUM_TRAJECTORY_OUTPUT|'estimated_trajectory.tum'}

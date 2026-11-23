@@ -1,0 +1,41 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters, tuned for the MulRan dataset
+# (Ouster OS1-64 LiDAR + Xsens MTi IMU on a car).
+# -----------------------------------------------------------------------------
+
+# T_lidar_imu: pose of the IMU frame wrt the LiDAR frame, precomputed from
+# mola_input_mulran_dataset's own calibration (MulranDataset.cpp:
+# ousterPoseOnVehicle_ inverted and composed with imuPoseOnVehicle_ =
+# translate(-0.07, 0, 0)), since MulRan's LiDAR is not the vehicle/base_link
+# frame (unlike e.g. Oxford Spires).
+imu_pose_in_lidar: "1.774200 -0.021409 1.804700 179.665400 0.000300 0.000100"
+
+# T_base_lidar: left at its identity default, so this pipeline reports the
+# LiDAR frame rather than the vehicle frame. MulRan's own vehicle extrinsic
+# has never been checked against a ground truth through this wrapper -- set
+# this once it is, rather than guessing a value here.
+baselink2lidar_pose_str: "0 0 0 0 0 0"
+
+lidar_sensor_label: "lidar"
+imu_sensor_label: "imu"
+
+# Fallback only: mola::MulranDataset always provides a per-point time
+# channel, so this is unused in practice for this dataset.
+fallback_scan_period: 0.1
+
+# IMU noise (generic MEMS-grade defaults; not separately characterized for
+# the Xsens unit used in MulRan):
+gyr_cov: 0.1
+acc_cov: 0.1
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+# Map / matching parameters (Ouster OS1-64, urban/campus driving, up to
+# ~150 m range):
+filter_size_surf: 0.5
+filter_size_map: 0.5
+cube_side_length: 1000.0
+det_range: 150.0
+max_iteration: 3
+extrinsic_est_en: false
+init_time: 0.1

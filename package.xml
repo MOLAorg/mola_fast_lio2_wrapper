@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<!-- This is a ROS package file, intended to allow this library to be built
+     side-by-side to ROS packages in a catkin/ament environment.
+-->
+<package format="3">
+  <name>mola_fast_lio2_wrapper</name>
+  <version>0.1.0</version>
+  <description>MOLA wrapper for the Fast-LIO2 LiDAR-inertial odometry algorithm</description>
+
+  <maintainer email="joseluisblancoc@gmail.com">Jose-Luis Blanco-Claraco</maintainer>
+  <!-- Per-program licenses, see THIRD_PARTY_NOTICES.md:
+       mola-fast-lio2-cli (with Fast-LIO2 and ikd-Tree): GPL-2.0-only;
+       this package's own sources: BSD-3-Clause;
+       mola-fast-lio2-dataset2rawlog (links MOLA): GPL-3.0-only. -->
+  <license file="LICENSE">GPL-2.0-only</license>
+  <license file="LICENSES/BSD-3-Clause.txt">BSD-3-Clause</license>
+  <license file="LICENSES/GPL-3.0-only.txt">GPL-3.0-only</license>
+
+  <url type="repository">https://github.com/MOLAorg/mola_fast_lio2_wrapper/</url>
+
+  <!-- mola-fast-lio2-cli and Fast-LIO2. mola_common: CMake scripts only -->
+  <build_depend>mola_common</build_depend>
+  <depend>cli11</depend>
+  <depend>mrpt_maps</depend>
+  <depend>mrpt_obs</depend>
+
+  <depend>eigen</depend>
+  <depend>boost</depend>
+  <depend>libpcl-all-dev</depend>
+
+  <!-- mola-fast-lio2-dataset2rawlog only (each input is optional) -->
+  <depend>mola_kernel</depend>
+  <depend>mola_yaml</depend>
+  <depend>mola_input_mulran_dataset</depend>
+  <depend>mola_input_rosbag2</depend>
+  <depend>mola_input_rosbag1</depend>
+  <depend>mola_input_kitti_dataset</depend>
+
+  <!-- Entries to make ROS 2 to discover this as a proper package -->
+  <build_depend>ros_environment</build_depend>
+  <build_depend>ament_cmake_xmllint</build_depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_gtest</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_xmllint</test_depend>
+  <test_depend>ament_lint_cmake</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

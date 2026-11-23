@@ -1,0 +1,42 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters for MVSim-generated synthetic LiDAR datasets
+# (e.g. mvsim-dataset-gen output of mvsim_tutorial/
+# demo_lidar_odometry_benchmark.world.xml: Ouster OS1-32 at 10 Hz, 60 m max
+# range, mounted 0.75 m above base_link).
+#
+# Such rawlogs carry no IMU, so run the offline CLI with --synthetic-imu: it
+# interleaves a constant-gravity, zero-angular-rate IMU reading before each
+# scan, and the motion estimate comes entirely from LiDAR registration. The
+# per-point time field is all zeros (instantaneous, undistorted scans), so no
+# deskew takes place.
+#
+# The output trajectory is reported for base_link, to be compared against the
+# dataset's base_link ground truth. See fastlio2-kitti.yaml for the rationale of
+# each parameter, which is shared with it.
+# -----------------------------------------------------------------------------
+
+lidar_sensor_label: "${MOLA_LIDAR_NAME|lidar1}"
+imu_sensor_label: "imu"
+
+imu_pose_in_lidar: "0 0 0 0 0 0"
+baselink2lidar_pose_str: "${MOLA_BASELINK2LIDAR|0 0 0.75 0 0 0}"
+
+fallback_scan_period: 0.1
+
+gyr_cov: ${FASTLIO_GYR_COV|0.1}
+acc_cov: ${FASTLIO_ACC_COV|0.1}
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+filter_size_surf: ${FASTLIO_FILTER_SIZE_SURF|0.5}
+filter_size_map: ${FASTLIO_FILTER_SIZE_MAP|0.5}
+cube_side_length: ${FASTLIO_CUBE_SIDE_LENGTH|1000.0}
+det_range: ${FASTLIO_DET_RANGE|100.0}
+max_iteration: ${FASTLIO_MAX_ITERATION|3}
+extrinsic_est_en: false
+init_time: 0.1
+
+blind: ${FASTLIO_BLIND|0.0}
+
+save_trajectory_to_file: ${MOLA_SAVE_TRAJECTORY|false}
+trajectory_output_file: ${MOLA_TUM_TRAJECTORY_OUTPUT|'estimated_trajectory.tum'}

@@ -1,0 +1,45 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters for the FoMo dataset
+# (RoboSense 128-channel LiDAR + VectorNav IMU, off-road vehicle, boreal forest).
+#
+# Starting point is fastlio2-grandtour.yaml with the extrinsics replaced and
+# the map filter set for a vehicle outdoors. No FoMo-specific retuning.
+# -----------------------------------------------------------------------------
+
+# T_lidar_imu: pose of the VectorNav IMU wrt the RoboSense LiDAR. The wrapper
+# inverts it itself for Fast-LIO2's own "LiDAR wrt IMU" extrinsic, so the
+# direct value goes here. Composed from the dataset's own calib/transforms.json
+# (robosense -> zedx_left -> vectornav), identical on all twelve deployments.
+imu_pose_in_lidar: "0.823235 -0.105926 -0.375205 89.824523 0.161172 -0.186357"
+
+# The LiDAR is the base frame in this dataset's evaluation.
+baselink2lidar_pose_str: "0 0 0 0 0 0"
+
+lidar_sensor_label: "lidar"
+imu_sensor_label: "imu"
+
+# Fallback only: the converted clouds carry per-point timestamps.
+fallback_scan_period: 0.1
+
+# IMU noise (generic MEMS-grade defaults, as for the other pipelines here):
+gyr_cov: ${FASTLIO_GYR_COV|0.1}
+acc_cov: ${FASTLIO_ACC_COV|0.1}
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+# Map / matching parameters: a vehicle in a forest, same scale as KITTI.
+filter_size_surf: ${FASTLIO_FILTER_SIZE_SURF|0.5}
+filter_size_map: ${FASTLIO_FILTER_SIZE_MAP|0.5}
+cube_side_length: ${FASTLIO_CUBE_SIDE_LENGTH|1000.0}
+det_range: ${FASTLIO_DET_RANGE|150.0}
+max_iteration: ${FASTLIO_MAX_ITERATION|3}
+extrinsic_est_en: false
+init_time: 0.1
+
+# Minimum range: returns off the vehicle body. Matches the 1.0 m minimum range
+# the mola_lidar_odometry pipeline applies on this dataset.
+blind: ${FASTLIO_BLIND|1.0}
+
+# --- Estimated trajectory output ---
+save_trajectory_to_file: ${MOLA_SAVE_TRAJECTORY|false}
+trajectory_output_file: ${MOLA_TUM_TRAJECTORY_OUTPUT|'estimated_trajectory.tum'}

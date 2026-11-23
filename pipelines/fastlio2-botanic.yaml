@@ -1,0 +1,65 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters, tuned for the BotanicGarden dataset
+# (Velodyne VLP-16 + Xsens MTi-680G IMU, ground vehicle, forest/garden scenes).
+#
+# Starting point is fastlio2-oxford-spires.yaml's tuning with the
+# Oxford-specific extrinsics and near-field cut replaced. No BotanicGarden
+# specific retuning has been done yet, deliberately: the first run of this file
+# is the like-for-like cross-method reference against mola_dlio_wrapper's
+# dlio-botanic.yaml (which is in the same unretuned state) and against
+# mola_lidar_odometry's own botanicgarden profile.
+# -----------------------------------------------------------------------------
+
+lidar_sensor_label: "lidar"
+imu_sensor_label: "imu"
+
+# T_lidar_imu: pose of the IMU frame wrt the LiDAR frame. base_link in this
+# dataset IS the Xsens IMU (mola_lidar_odometry's botanicgarden profile puts it
+# at identity), so this is the inverse of that profile's LIDAR_POSE_*
+# ("0.0584868 0.0084042 0.1689155 -1.448155 0.097462 0.444791"). Same value and
+# same convention as dlio-botanic.yaml's imu_pose_in_lidar_str, which is where
+# it was computed by real pose composition (mrpt::poses::CPose3D) rather than
+# by hand.
+imu_pose_in_lidar: "-0.0579683 -0.0111914 -0.1689326 1.4488696 -0.0861871 -0.4471125"
+
+# T_base_lidar: identity, because the IMU offset above already carries the
+# whole Xsens-to-Velodyne lever arm and this dataset's ground truth is in the
+# Xsens frame. Contrast Oxford Spires, where base_link is a real 180 deg yaw
+# away from the LiDAR and this knob has to state it.
+baselink2lidar_pose_str: "0 0 0 0 0 0"
+
+# Velodyne VLP-16, 10 Hz, with real per-point timestamps in this dataset's
+# bags (same situation as Oxford Spires' Hesai), so this is a fallback only.
+fallback_scan_period: 0.1
+
+# IMU noise (generic MEMS-grade defaults, as everywhere else in this wrapper;
+# not separately characterized for the Xsens MTi-680G):
+gyr_cov: ${FASTLIO_GYR_COV|0.1}
+acc_cov: ${FASTLIO_ACC_COV|0.1}
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+# Map / matching parameters. Ground vehicle in a garden/forest scene: shorter
+# effective range than Oxford's campus and much denser near-field vegetation,
+# but the same 0.3 m voxel is kept for now so the first number this file
+# produces is comparable with the Oxford one rather than with a second,
+# simultaneous change.
+filter_size_surf: ${FASTLIO_FILTER_SIZE_SURF|0.3}
+filter_size_map: ${FASTLIO_FILTER_SIZE_MAP|0.3}
+cube_side_length: ${FASTLIO_CUBE_SIDE_LENGTH|500.0}
+det_range: ${FASTLIO_DET_RANGE|100.0}
+max_iteration: ${FASTLIO_MAX_ITERATION|3}
+extrinsic_est_en: false
+init_time: 0.1
+
+# Minimum range. Unlike the Oxford Spires handheld/backpack rig there is no
+# carrier body rigidly attached in front of the sensor here, so the 1.0 m cut
+# that file needs is not justified: DLIO's own BotanicGarden pipeline uses a
+# 1.0 m crop box around the sensor origin for the same purpose and this is the
+# nearest equivalent. Kept small rather than zero because the VLP-16 does
+# return a few points off the vehicle itself.
+blind: ${FASTLIO_BLIND|0.5}
+
+# --- Estimated trajectory output ---
+save_trajectory_to_file: ${MOLA_SAVE_TRAJECTORY|false}
+trajectory_output_file: ${MOLA_TUM_TRAJECTORY_OUTPUT|'estimated_trajectory.tum'}

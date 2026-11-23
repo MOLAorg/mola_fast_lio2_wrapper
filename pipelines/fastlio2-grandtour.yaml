@@ -1,0 +1,69 @@
+# -----------------------------------------------------------------------------
+# Fast-LIO2 algorithm parameters for the GrandTour dataset
+# (Hesai Pandar LiDAR + ADIS16475 IMU, on a legged robot carrying the "Boxi"
+# sensor payload).
+#
+# The two extrinsics below were composed from the dataset's own /tf_static
+# chain, base -> box_base -> {hesai_lidar, adis16475_imu}. The composition was
+# checked by running the same chain out to the total-station prism, which
+# reproduces the independently recorded base -> prism lever arm to six
+# decimals.
+# -----------------------------------------------------------------------------
+
+# T_lidar_imu: pose of the IMU frame wrt the LiDAR frame. The wrapper inverts
+# it itself for Fast-LIO2's own "LiDAR wrt IMU" extrinsic, so the direct value
+# goes here.
+#
+# The default is the ADIS16475 (/boxi/adis/imu). The dataset profile selects
+# the STIM320 (/boxi/stim320/imu) whenever its bags are present, and that IMU
+# sits in a different frame, so the caller must set GRANDTOUR_IMU_POSE_IN_LIDAR
+# to match the IMU topic it feeds. Both values come from the same /tf_static
+# chain (box_base -> hesai_lidar / adis16475_imu / stim320_imu):
+#   ADIS16475: -0.025834 0.109043 -0.091543 0.753505 -0.281543 -0.144080
+#   STIM320:    0.025853 0.016480 -0.171397 -90.222606 -0.153164 -0.003319
+imu_pose_in_lidar: ${GRANDTOUR_IMU_POSE_IN_LIDAR|-0.025834 0.109043 -0.091543 0.753505 -0.281543 -0.144080}
+
+# T_base_lidar: pose of the LiDAR frame wrt the `base` frame, which is what
+# this dataset's odometry is expected to report and what its ground truth is
+# referred to.
+baselink2lidar_pose_str: "0.378927 0.006448 0.293116 89.636850 -0.671173 0.042510"
+
+lidar_sensor_label: "lidar"
+imu_sensor_label: "imu"
+
+# Fallback only: the "_undist" PointCloud2 streams carry per-point timestamps.
+fallback_scan_period: 0.1
+
+# The "_undist" stream is already motion-compensated by the dataset, but its
+# per-point timestamps still span the sweep. De-skewing it a second time
+# distorts the scan by the platform's own motion (measured on eth-1 against
+# the RTK-INS reference: a walking robot turns a 0.03 m APE into 0.86 m), so
+# every point is taken at the observation time instead. Set it to false for
+# the raw "<mission>_hesai.bag" stream, which needs the de-skew.
+ignore_point_timestamps: ${GRANDTOUR_IGNORE_POINT_TIMESTAMPS|true}
+
+# IMU noise (generic MEMS-grade defaults, as for the other pipelines here):
+gyr_cov: ${FASTLIO_GYR_COV|0.1}
+acc_cov: ${FASTLIO_ACC_COV|0.1}
+b_gyr_cov: 0.0001
+b_acc_cov: 0.0001
+
+# Map / matching parameters. These missions range from confined indoor spaces
+# to open construction sites of well over 100 m, so the detection range and
+# the map cube are set for the large end.
+filter_size_surf: ${FASTLIO_FILTER_SIZE_SURF|0.3}
+filter_size_map: ${FASTLIO_FILTER_SIZE_MAP|0.3}
+cube_side_length: ${FASTLIO_CUBE_SIDE_LENGTH|1000.0}
+det_range: ${FASTLIO_DET_RANGE|150.0}
+max_iteration: ${FASTLIO_MAX_ITERATION|3}
+extrinsic_est_en: false
+init_time: 0.1
+
+# Minimum range: the payload sits on a walking robot, so the near field holds
+# the machine's own moving legs. Those returns are not rigidly attached to the
+# sensor and are the worst possible registration constraint.
+blind: ${FASTLIO_BLIND|1.0}
+
+# --- Estimated trajectory output ---
+save_trajectory_to_file: ${MOLA_SAVE_TRAJECTORY|false}
+trajectory_output_file: ${MOLA_TUM_TRAJECTORY_OUTPUT|'estimated_trajectory.tum'}

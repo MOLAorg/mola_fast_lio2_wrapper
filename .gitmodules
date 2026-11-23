@@ -1,0 +1,4 @@
+[submodule "third_party/ikd-Tree"]
+	path = third_party/ikd-Tree
+	url = https://github.com/hku-mars/ikd-Tree.git
+	branch = fast_lio

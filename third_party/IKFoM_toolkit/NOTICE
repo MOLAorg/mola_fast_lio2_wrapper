@@ -1,0 +1,7 @@
+Vendored verbatim, unmodified, from https://github.com/hku-mars/FAST_LIO
+(branch ROS2, path include/IKFoM_toolkit/).
+
+License: BSD 3-Clause. Copyright (c) 2019-2023, The University of Hong Kong.
+Author: Dongjiao HE <hdj65822@connect.hku.hk>.
+
+See ../../THIRD_PARTY_NOTICES.md for details.
