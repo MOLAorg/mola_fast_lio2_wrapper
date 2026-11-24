@@ -51,7 +51,9 @@
 // currently-installed Eigen headers, causing a heap-buffer-overflow on
 // deallocation across the .so boundary. Header-only instantiation sidesteps
 // that ABI mismatch entirely.
+#ifndef PCL_NO_PRECOMPILE
 #define PCL_NO_PRECOMPILE
+#endif
 #include <fast_lio2_core/FastLio2Core.h>
 #include <fast_lio2_core/so3_math.h>
 

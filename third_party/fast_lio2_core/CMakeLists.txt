@@ -10,7 +10,9 @@ add_library(fast_lio2_core STATIC
   src/ikd_Tree_build.cpp
 )
 
-target_include_directories(fast_lio2_core PUBLIC
+# SYSTEM: upstream-derived headers, kept close to upstream, so our stricter
+# warning flags (e.g. -Wshadow) are not applied to them.
+target_include_directories(fast_lio2_core SYSTEM PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../          # for <IKFoM_toolkit/...>
   ${CMAKE_CURRENT_SOURCE_DIR}/../ikd-Tree  # for <ikd_Tree.h>
