@@ -31,6 +31,9 @@ target_link_libraries(fast_lio2_core PUBLIC
 # consumers linking PointCloudXYZI::Ptr across this library's API boundary
 # stay consistent.
 target_compile_definitions(fast_lio2_core PUBLIC PCL_NO_PRECOMPILE)
+# Vendored IKFoM includes <boost/bind.hpp>: keep its global placeholders
+# without the deprecation message.
+target_compile_definitions(fast_lio2_core PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
 
 # ikd-Tree hands any subtree above Multi_Thread_Rebuild_Point_Num to an
 # asynchronous rebuild thread, and only if a mutex trylock succeeds, so results
